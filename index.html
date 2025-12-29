@@ -335,6 +335,7 @@
             }
         }
 
+        /* ---- NEW PRINT FIX ---- */
         @media print {
             body {
                 background: white;
@@ -360,20 +361,50 @@
                 margin: 0.25in;
             }
 
+            /* Disable 3D / flipping for print so text is not mirrored */
             .flashcard-inner {
                 width: 3.5in;
                 height: 2.1in;
+                transform: none !important;
+                transform-style: flat !important;
+                perspective: none !important;
+            }
+
+            /* Render both faces in normal, readable orientation */
+            .flashcard-front,
+            .flashcard-back {
+                position: static !important;
+                width: 100% !important;
+                height: auto !important;
+                transform: none !important;
+                backface-visibility: visible !important;
+                box-shadow: none !important;
+                display: block !important;
+                overflow: visible !important;
+            }
+
+            /* Show both the front and back one after another for each card */
+            .flashcard-inner {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 6px;
+            }
+
+            .flashcard-back {
+                margin-top: 6px;
+                page-break-after: always;
             }
 
             .flashcard-front,
             .flashcard-back {
-                font-size: 0.85em;
+                font-size: 0.85em !important;
             }
 
             .flashcard-label {
-                font-size: 0.65em;
+                font-size: 0.65em !important;
             }
         }
+        /* ---- END PRINT FIX ---- */
 
         .error {
             background: #ffe0e0;
