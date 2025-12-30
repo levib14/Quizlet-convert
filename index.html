@@ -40,14 +40,14 @@
         }
 
         header p {
-            font-size:  1.1em;
+            font-size: 1.1em;
             opacity: 0.9;
         }
 
         .controls {
             background: white;
             padding: 25px;
-            border-radius:  12px;
+            border-radius: 12px;
             margin-bottom: 30px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
@@ -64,7 +64,7 @@
         .control-group label {
             display: block;
             margin-bottom: 8px;
-            font-weight:  600;
+            font-weight: 600;
             font-size: 1.05em;
         }
 
@@ -100,17 +100,17 @@
 
         button {
             padding: 12px 24px;
-            border:  none;
-            border-radius:  8px;
+            border: none;
+            border-radius: 8px;
             font-size: 1em;
             font-weight: 600;
             cursor: pointer;
-            transition:  all 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .btn-primary {
             background: #667eea;
-            color:  white;
+            color: white;
         }
 
         .btn-primary:hover {
@@ -132,7 +132,7 @@
 
         .btn-danger {
             background: #ff6b6b;
-            color:  white;
+            color: white;
         }
 
         .btn-danger:hover {
@@ -155,7 +155,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
-            margin-top:  20px;
+            margin-top: 20px;
             padding-top: 20px;
             border-top: 2px solid #eee;
         }
@@ -197,7 +197,7 @@
             border-left: 4px solid #667eea;
             padding: 15px;
             border-radius: 6px;
-            margin-bottom:  20px;
+            margin-bottom: 20px;
             font-size: 0.95em;
         }
 
@@ -244,7 +244,7 @@
             padding: 20px;
             text-align: center;
             border-radius: 10px;
-            box-shadow:  0 8px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
             word-wrap: break-word;
             overflow-y: auto;
         }
@@ -256,7 +256,7 @@
 
         .flashcard-back {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color:  white;
+            color: white;
             transform: rotateY(180deg);
         }
 
@@ -264,7 +264,7 @@
             position: absolute;
             top: 10px;
             left: 15px;
-            font-size:  0.8em;
+            font-size: 0.8em;
             opacity: 0.8;
             font-weight: 600;
             text-transform: uppercase;
@@ -299,7 +299,7 @@
             background: white;
             border: none;
             padding: 12px 16px;
-            border-radius:  50px;
+            border-radius: 50px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             font-size: 1.2em;
@@ -335,7 +335,7 @@
             }
         }
 
-        /* ---- NEW PRINT FIX ---- */
+        /* ---- PRINT LAYOUT FOR TWO-SIDED CARDS ---- */
         @media print {
             body {
                 background: white;
@@ -350,67 +350,81 @@
             }
 
             .flashcard-container {
-                gap: 0;
-                grid-template-columns: repeat(2, 1fr);
+                display: block !important;
+            }
+
+            /* Page setup for fronts */
+            .print-page-fronts,
+            .print-page-backs {
+                width: 8.5in;
+                height: 11in;
+                page-break-after: always;
+                display: grid;
+                grid-template-columns: repeat(3, 2.5in);
+                grid-template-rows: repeat(4, 2.5in);
+                gap: 0.25in;
+                padding: 0.5in;
+            }
+
+            .print-card {
+                width: 2.5in;
+                height: 2.5in;
+                border: 1px dashed #ccc;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.3in;
+                text-align: center;
+                box-sizing: border-box;
+                overflow: hidden;
+                word-wrap: break-word;
+            }
+
+            .print-card-front {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+
+            .print-card-back {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                color: white;
+                /* Flip horizontally so when you flip the paper, text is right-side-up */
+                transform: scaleX(-1);
+            }
+
+            .print-card-back .card-content {
+                /* Flip the text back so it's readable */
+                transform: scaleX(-1);
+            }
+
+            .print-label {
+                position: absolute;
+                top: 0.15in;
+                left: 0.15in;
+                font-size: 0.6em;
+                opacity: 0.8;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
+
+            .card-content {
+                font-size: 1em;
+                font-weight: 500;
+                line-height: 1.3;
+                position: relative;
             }
 
             .flashcard {
-                page-break-inside: avoid;
-                width: 3.5in;
-                height: 2.1in;
-                margin: 0.25in;
-            }
-
-            /* Disable 3D / flipping for print so text is not mirrored */
-            .flashcard-inner {
-                width: 3.5in;
-                height: 2.1in;
-                transform: none !important;
-                transform-style: flat !important;
-                perspective: none !important;
-            }
-
-            /* Render both faces in normal, readable orientation */
-            .flashcard-front,
-            .flashcard-back {
-                position: static !important;
-                width: 100% !important;
-                height: auto !important;
-                transform: none !important;
-                backface-visibility: visible !important;
-                box-shadow: none !important;
-                display: block !important;
-                overflow: visible !important;
-            }
-
-            /* Show both the front and back one after another for each card */
-            .flashcard-inner {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 6px;
-            }
-
-            .flashcard-back {
-                margin-top: 6px;
-                page-break-after: always;
-            }
-
-            .flashcard-front,
-            .flashcard-back {
-                font-size: 0.85em !important;
-            }
-
-            .flashcard-label {
-                font-size: 0.65em !important;
+                display: none !important;
             }
         }
-        /* ---- END PRINT FIX ---- */
+        /* ---- END PRINT LAYOUT ---- */
 
         .error {
             background: #ffe0e0;
             color: #c00;
             padding: 15px;
-            border-radius:  6px;
+            border-radius: 6px;
             margin-bottom: 20px;
             border-left: 4px solid #c00;
         }
@@ -424,14 +438,14 @@
             background: #e0ffe0;
             color: #008000;
             padding: 15px;
-            border-radius:  6px;
+            border-radius: 6px;
             margin-bottom: 20px;
             border-left: 4px solid #008000;
         }
 
         body.dark-mode .success {
             background: #1a3a1a;
-            color:  #6bff6b;
+            color: #6bff6b;
         }
     </style>
 </head>
@@ -464,7 +478,7 @@
             </div>
 
             <div class="button-group">
-                <button class="btn-primary" onclick="parseFlashcards()">📥 Create Flashcards</button>
+                <button class="btn-primary" onclick="parseFlashcards()">🔥 Create Flashcards</button>
                 <button class="btn-secondary" onclick="clearAll()">🗑️ Clear All</button>
             </div>
 
@@ -522,7 +536,7 @@
             document.body.classList.toggle('dark-mode');
             const isDarkMode = document.body.classList.contains('dark-mode');
             localStorage.setItem('darkMode', isDarkMode);
-            this.textContent = isDarkMode ?  '☀️' : '🌙';
+            this.textContent = isDarkMode ? '☀️' : '🌙';
         });
 
         let flashcards = [];
@@ -568,7 +582,7 @@
                 }
 
                 if (flashcards.length === 0) {
-                    showMessage('No flashcards found.  Make sure your format is correct (term\\tdefinition).', 'error');
+                    showMessage('No flashcards found. Make sure your format is correct (term\\tdefinition).', 'error');
                     return;
                 }
 
@@ -680,9 +694,83 @@
                 showMessage('Please create flashcards first!', 'error');
                 return;
             }
-            alert('To save as PDF, use your browser\'s print function (Ctrl+P or Cmd+P) and select "Save as PDF" as the printer.');
+            alert('To save as PDF:\n1. Use your browser\'s print function (Ctrl+P or Cmd+P)\n2. Select "Save as PDF" as the printer\n3. Print page 1 (fronts)\n4. Flip the paper and put it back in the printer\n5. Print page 2 (backs)\n6. Cut along the dashed lines');
             window.print();
         }
+
+        // Before printing, create print-friendly layout
+        window.addEventListener('beforeprint', function() {
+            const container = document.getElementById('flashcardContainer');
+            const originalContent = container.innerHTML;
+            container.setAttribute('data-original', originalContent);
+            
+            // Create print layout
+            let printHTML = '';
+            const cardsPerPage = 12; // 3 columns x 4 rows
+            
+            // Calculate total pages needed
+            const totalPages = Math.ceil(flashcards.length / cardsPerPage);
+            
+            // Generate fronts pages
+            for (let page = 0; page < totalPages; page++) {
+                printHTML += '<div class="print-page-fronts">';
+                for (let i = 0; i < cardsPerPage; i++) {
+                    const cardIndex = page * cardsPerPage + i;
+                    if (cardIndex < flashcards.length) {
+                        const card = flashcards[cardIndex];
+                        printHTML += `
+                            <div class="print-card print-card-front">
+                                <div class="print-label">Term</div>
+                                <div class="card-content">${escapeHtml(card.term)}</div>
+                            </div>
+                        `;
+                    } else {
+                        printHTML += '<div class="print-card"></div>';
+                    }
+                }
+                printHTML += '</div>';
+            }
+            
+            // Generate backs pages (in reverse order to align with fronts when flipped)
+            for (let page = 0; page < totalPages; page++) {
+                printHTML += '<div class="print-page-backs">';
+                // Reverse the order within each page for proper alignment
+                for (let i = cardsPerPage - 1; i >= 0; i--) {
+                    const cardIndex = page * cardsPerPage + i;
+                    if (cardIndex < flashcards.length) {
+                        const card = flashcards[cardIndex];
+                        printHTML += `
+                            <div class="print-card print-card-back">
+                                <div class="print-label">Definition</div>
+                                <div class="card-content">${escapeHtml(card.definition)}</div>
+                            </div>
+                        `;
+                    } else {
+                        printHTML += '<div class="print-card"></div>';
+                    }
+                }
+                printHTML += '</div>';
+            }
+            
+            container.innerHTML = printHTML;
+        });
+
+        window.addEventListener('afterprint', function() {
+            const container = document.getElementById('flashcardContainer');
+            const originalContent = container.getAttribute('data-original');
+            if (originalContent) {
+                container.innerHTML = originalContent;
+                container.removeAttribute('data-original');
+                
+                // Re-attach click events
+                const cards = container.querySelectorAll('.flashcard');
+                cards.forEach(card => {
+                    card.addEventListener('click', function() {
+                        this.classList.toggle('flipped');
+                    });
+                });
+            }
+        });
 
         // Keyboard navigation
         document.addEventListener('keydown', function(e) {
