@@ -285,6 +285,21 @@
             justify-content: center;
         }
 
+        .print-note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #856404;
+        }
+
+        body.dark-mode .print-note {
+            background: #3a3020;
+            color: #ffd700;
+        }
+
         .stats {
             text-align: center;
             color: white;
@@ -345,7 +360,8 @@
             .mode-toggle,
             .controls-bottom,
             .stats,
-            header {
+            header,
+            .print-note {
                 display: none !important;
             }
 
@@ -353,9 +369,8 @@
                 display: block !important;
             }
 
-            /* Page setup for fronts */
-            .print-page-fronts,
-            .print-page-backs {
+            /* Page setup - same for both sides */
+            .print-page {
                 width: 8.5in;
                 height: 11in;
                 page-break-after: always;
@@ -364,6 +379,7 @@
                 grid-template-rows: repeat(4, 2.5in);
                 gap: 0.25in;
                 padding: 0.5in;
+                box-sizing: border-box;
             }
 
             .print-card {
@@ -388,13 +404,6 @@
             .print-card-back {
                 background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
                 color: white;
-                /* Flip horizontally so when you flip the paper, text is right-side-up */
-                transform: scaleX(-1);
-            }
-
-            .print-card-back .card-content {
-                /* Flip the text back so it's readable */
-                transform: scaleX(-1);
             }
 
             .print-label {
@@ -516,6 +525,10 @@
             <div class="controls-bottom">
                 <button class="btn-secondary" onclick="window.print()">🖨️ Print Flashcards</button>
                 <button class="btn-secondary" onclick="downloadPDF()">📄 Download as PDF</button>
+            </div>
+
+            <div class="print-note">
+                💡 <strong>Printing Instructions:</strong> When you print, odd pages will have the fronts (questions) and even pages will have the backs (answers). Print double-sided with "flip on short edge" so the backs align perfectly with the fronts. Then cut along the dashed lines!
             </div>
 
             <div class="stats" id="stats"></div>
@@ -694,8 +707,60 @@
                 showMessage('Please create flashcards first!', 'error');
                 return;
             }
-            alert('To save as PDF:\n1. Use your browser\'s print function (Ctrl+P or Cmd+P)\n2. Select "Save as PDF" as the printer\n3. Print page 1 (fronts)\n4. Flip the paper and put it back in the printer\n5. Print page 2 (backs)\n6. Cut along the dashed lines');
-            window.print();
+            
+            // Show instructions in a better way
+            const instructionsDiv = document.createElement('div');
+            instructionsDiv.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 500px;
+                color: #333;
+            `;
+            
+            instructionsDiv.innerHTML = `
+                <h3 style="margin-top: 0; color: #667eea;">📄 Print Instructions</h3>
+                <ol style="line-height: 1.8; padding-left: 20px;">
+                    <li>Use your browser's print function (Ctrl+P or Cmd+P)</li>
+                    <li>Select <strong>"Print on both sides"</strong></li>
+                    <li>Choose <strong>"Flip on short edge"</strong></li>
+                    <li>Print all pages</li>
+                    <li>Cut along the dashed lines</li>
+                    <li>Each piece becomes a flashcard you can flip!</li>
+                </ol>
+                <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin: 15px 0; font-size: 0.9em;">
+                    <strong>💡 Tip:</strong> Page 1 has fronts, Page 2 has backs (aligned), Page 3 has more fronts, etc.
+                </div>
+                <button onclick="this.parentElement.remove(); window.print();" style="
+                    background: #667eea;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-size: 1em;
+                    font-weight: 600;
+                    cursor: pointer;
+                    margin-right: 10px;
+                ">Print Now</button>
+                <button onclick="this.parentElement.remove();" style="
+                    background: #ddd;
+                    color: #333;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-size: 1em;
+                    font-weight: 600;
+                    cursor: pointer;
+                ">Cancel</button>
+            `;
+            
+            document.body.appendChild(instructionsDiv);
         }
 
         // Before printing, create print-friendly layout
@@ -711,9 +776,9 @@
             // Calculate total pages needed
             const totalPages = Math.ceil(flashcards.length / cardsPerPage);
             
-            // Generate fronts pages
+            // Generate each page with fronts
             for (let page = 0; page < totalPages; page++) {
-                printHTML += '<div class="print-page-fronts">';
+                printHTML += '<div class="print-page">';
                 for (let i = 0; i < cardsPerPage; i++) {
                     const cardIndex = page * cardsPerPage + i;
                     if (cardIndex < flashcards.length) {
@@ -729,24 +794,27 @@
                     }
                 }
                 printHTML += '</div>';
-            }
-            
-            // Generate backs pages (in reverse order to align with fronts when flipped)
-            for (let page = 0; page < totalPages; page++) {
-                printHTML += '<div class="print-page-backs">';
-                // Reverse the order within each page for proper alignment
-                for (let i = cardsPerPage - 1; i >= 0; i--) {
-                    const cardIndex = page * cardsPerPage + i;
-                    if (cardIndex < flashcards.length) {
-                        const card = flashcards[cardIndex];
-                        printHTML += `
-                            <div class="print-card print-card-back">
-                                <div class="print-label">Definition</div>
-                                <div class="card-content">${escapeHtml(card.definition)}</div>
-                            </div>
-                        `;
-                    } else {
-                        printHTML += '<div class="print-card"></div>';
+                
+                // Generate backs page - mirrored horizontally to align when paper is flipped
+                printHTML += '<div class="print-page">';
+                // We need to reverse the horizontal order but keep vertical order
+                // Layout: [0][1][2]  ->  [2][1][0]  (when flipped)
+                //         [3][4][5]  ->  [5][4][3]
+                for (let row = 0; row < 4; row++) {
+                    for (let col = 2; col >= 0; col--) { // Reverse columns
+                        const i = row * 3 + col;
+                        const cardIndex = page * cardsPerPage + (row * 3 + (2 - col)); // Map to correct front
+                        if (cardIndex < flashcards.length) {
+                            const card = flashcards[cardIndex];
+                            printHTML += `
+                                <div class="print-card print-card-back">
+                                    <div class="print-label">Definition</div>
+                                    <div class="card-content">${escapeHtml(card.definition)}</div>
+                                </div>
+                            `;
+                        } else {
+                            printHTML += '<div class="print-card"></div>';
+                        }
                     }
                 }
                 printHTML += '</div>';
