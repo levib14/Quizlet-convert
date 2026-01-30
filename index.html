@@ -44,7 +44,6 @@
             font-size: 0.8rem;
         }
 
-        /* Checklist Box */
         .checklist-card {
             background: #fff;
             border: 2px solid var(--primary);
@@ -76,7 +75,6 @@
             gap: 8px;
         }
 
-        /* UI Elements */
         .main-box {
             background: white;
             padding: 30px;
@@ -115,7 +113,6 @@
         .btn-clear { background: #f1f5f9; color: #475569; }
         button:hover { opacity: 0.9; }
 
-        /* Preview Grid */
         .preview-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -131,45 +128,64 @@
             position: relative;
         }
 
-        .preview-card::after {
-            content: "Preview";
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 0.6rem;
-            color: #cbd5e1;
-            text-transform: uppercase;
-        }
-
-        /* PRINT LOGIC */
+        /* PRINT LOGIC - UPDATED FOR PRECISION ALIGNMENT */
         @media print {
-            @page { size: 8.5in 11in; margin: 0; }
-            body { background: white !important; padding: 0 !important; }
+            @page { 
+                size: 8.5in 11in; 
+                margin: 0 !important; /* Removes browser-added margins */
+            }
+            
+            body { 
+                background: white !important; 
+                padding: 0 !important; 
+                margin: 0 !important;
+            }
+
             .container { display: none !important; }
             #print-section { display: block !important; }
 
             .print-page {
-                width: 8.5in; height: 11in;
+                width: 8.5in; 
+                height: 11in;
                 page-break-after: always;
+                display: flex;
+                justify-content: center;
+                align-items: center; /* Centers the whole block on the page */
+                background: white !important;
+            }
+
+            .card-grid {
                 display: grid;
                 grid-template-columns: repeat(3, 2.5in);
                 grid-template-rows: repeat(4, 2.5in);
-                padding: 0.5in;
-                box-sizing: border-box;
-                justify-content: center;
+                /* No gaps to ensure front and back edges are shared */
+                border: 0.1pt solid #eee; 
             }
 
             .print-card {
-                width: 2.5in; height: 2.5in;
-                border: 0.5pt solid black !important;
-                display: flex; align-items: center; justify-content: center;
-                padding: 15pt; text-align: center; font-size: 11pt;
-                position: relative; box-sizing: border-box;
+                width: 2.5in; 
+                height: 2.5in;
+                border: 0.5pt solid black !important; /* Thin cut lines */
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                padding: 15pt; 
+                text-align: center; 
+                font-size: 11pt;
+                position: relative; 
+                box-sizing: border-box;
                 background: white !important;
                 color: black !important;
             }
 
-            .p-label { position: absolute; top: 6pt; left: 6pt; font-size: 7pt; font-weight: bold; color: #666 !important; }
+            .p-label { 
+                position: absolute; 
+                top: 6pt; 
+                left: 6pt; 
+                font-size: 7pt; 
+                font-weight: bold; 
+                color: #888 !important; 
+            }
         }
     </style>
 </head>
@@ -182,18 +198,19 @@
     </header>
 
     <div class="checklist-card">
-        <h3>🖨️ Required Print Settings</h3>
+        <h3>🖨️ Precision Printing Checklist</h3>
+        <p style="font-size: 0.85rem; margin-bottom: 10px; color: #64748b;">If cards are off by a few mm, check these settings:</p>
         <div class="checklist-grid">
             <div class="check-item">✅ <strong>Double-Sided:</strong> ON</div>
             <div class="check-item">✅ <strong>Flip on:</strong> Long Edge</div>
-            <div class="check-item">✅ <strong>Scale:</strong> 100% (Actual Size)</div>
-            <div class="check-item">✅ <strong>Graphics:</strong> Enabled</div>
+            <div class="check-item">✅ <strong>Scale:</strong> Exactly 100%</div>
+            <div class="check-item">✅ <strong>Margins:</strong> None / Default</div>
         </div>
     </div>
 
     <div class="main-box">
         <label>Paste Quizlet Export (Term [TAB] Definition)</label>
-        <textarea id="input" placeholder="Example:&#10;Photosynthesis	Process of turning light into energy&#10;Mitochondria	Powerhouse of the cell"></textarea>
+        <textarea id="input" placeholder="Term	Definition"></textarea>
         
         <div class="btn-group">
             <button class="btn-main" onclick="generate()">Create Cards</button>
@@ -241,23 +258,23 @@
         const totalP = Math.ceil(cards.length / perPage);
 
         for (let p = 0; p < totalP; p++) {
-            // FRONTS
-            let fHtml = '<div class="print-page">';
+            // FRONT PAGE
+            let fHtml = '<div class="print-page"><div class="card-grid">';
             for (let i = 0; i < perPage; i++) {
                 const idx = p * perPage + i;
                 fHtml += `<div class="print-card">${idx < cards.length ? `<span class="p-label">TERM</span>${cards[idx].t}` : ''}</div>`;
             }
-            fHtml += '</div>';
+            fHtml += '</div></div>';
 
-            // BACKS (Mirrored for Long-Edge Flip)
-            let bHtml = '<div class="print-page">';
+            // BACK PAGE (Mirrored Columns for Long-Edge Flip)
+            let bHtml = '<div class="print-page"><div class="card-grid">';
             for (let r = 0; r < 4; r++) {
-                for (let c = 2; c >= 0; c--) {
+                for (let c = 2; c >= 0; c--) { // Reverses the column order (0,1,2 becomes 2,1,0)
                     const idx = p * perPage + (r * 3 + c);
                     bHtml += `<div class="print-card">${idx < cards.length ? `<span class="p-label">DEFINITION</span>${cards[idx].d}` : ''}</div>`;
                 }
             }
-            bHtml += '</div>';
+            bHtml += '</div></div>';
             ps.innerHTML += fHtml + bHtml;
         }
         document.body.appendChild(ps);
